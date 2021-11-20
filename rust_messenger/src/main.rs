@@ -1,4 +1,8 @@
-use std::process;
+extern crate chrono;
+
+use chrono::Local;
+use std::time::{self, Duration};
+use std::{process, thread};
 use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
     net::TcpListener,
@@ -7,6 +11,13 @@ use tokio::{
 #[tokio::main]
 async fn main() {
     println!("Hello, world!");
+    thread::spawn(|| {
+        while 1 != 2 {
+            let date = Local::now();
+            println!("The hours is {}", date.format("%H:%M:%S"));
+            thread::sleep(Duration::from_millis(120000));
+        }
+    });
 
     // Création du listener
     // Quand on utilise .await, on dit qu'au compilateur qu'il peut attendre que
@@ -51,14 +62,14 @@ async fn main() {
                         }
 
                         //tx.send((line.clone(), addr)).unwrap();
-                        let cl = match tx.send((line.clone(),addr)) {
+                         match tx.send((line.clone(),addr)) {
                             Ok(cl) => cl,
                             Err(_e) => process::exit(1),
                         };
                         line.clear();
                     }
                     result = rx.recv() => {
-                        let (mut msg, other_addr) = match result {
+                        let ( msg, other_addr) = match result {
                             Ok((msg,other_addr)) =>(msg,other_addr),
                             Err(_e) => process::exit(1),
                         };
